@@ -1,5 +1,5 @@
 ---
-title: "Predicting the Duke vs. UNC game on Feb. 3, 2023 using modeling"
+title: "Predicting Duke vs. UNC Feb. 3, 2023 using modeling"
 format: pdf
 editor: visual
 author: "Dom Fenoglio, The Duke Chronicle"
@@ -179,20 +179,13 @@ conf_matrix_unc <- confusionMatrix(data=conf_mat_data_unc$projection_bin, refere
 conf_matrix_unc
 ```
 
-```{r conf_matrix for Duke_UNC games}
+```{r graph for Duke UNC games, echo=FALSE}
 real_results <- real_results %>% 
   mutate(bin_win = as.factor(if_else(diff > 0, 1,0)))
 
 full_predictions <- full_predictions %>% 
   mutate(bin_win = as.factor(if_else(diff > 0, 1,0)))
 
-filtered_predictions <- full_predictions %>% 
-  filter(team == "Duke")
-
-confusionMatrix(data=filtered_predictions$bin_win, reference = real_results$bin_win, positive = "1")
-```
-
-```{r graph for Duke UNC games, echo=FALSE}
 joined_pred_real <- full_join(real_results,full_predictions, by = join_by(date))
 
 joined_pred_real %>% 
@@ -211,9 +204,14 @@ joined_pred_real %>%
        color = "Did Duke win?",
        shape = "Where is the game?")
 ```
+```{r conf_matrix for Duke_UNC games, echo=FALSE, message=FALSE}
+filtered_predictions <- full_predictions %>% 
+  filter(team == "Duke")
 
+confusionMatrix(data=filtered_predictions$bin_win, reference = real_results$bin_win, positive = "1")
+```
 
-```{r graph and conf_matrix for both teams}
+```{r graph and conf_matrix for both teams, echo=FALSE,message=FALSE}
 both_teams <- full_join(duke_final,unc_final)
 
 both_teams %>% 
