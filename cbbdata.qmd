@@ -1,10 +1,10 @@
 ---
 title: "cbbdata"
-format: html
+format: pdf
 editor: visual
 ---
 
-```{r}
+```{r loading packages, message=FALSE}
 # persistent log-in
 cbbdata::cbd_login()
 library(cbbdata)
@@ -13,23 +13,23 @@ library(tidymodels)
 library(caret)
 ```
 
-```{r}
+```{r getting Duke data}
 duke_data <- cbd_torvik_game_factors() %>% 
   filter(team == 'Duke')
 ```
 
-```{r}
+```{r simulating Duke UNC game for feb 2024}
 duke_unc_game <- cbd_torvik_season_prediction('Duke',2024) %>% 
   filter(opp == 'North Carolina', game_location == 'A')
 duke_unc_game
 unc_duke_game <- cbd_torvik_season_prediction('North Carolina',2024) %>% 
   filter(opp == 'Duke', game_location == 'H')
 unc_duke_game
-#result <- rbinom(100, 1, 0.2346)
-#hist(result) 
+result <- rbinom(100, 1, 0.2346)
+hist(result) 
 ```
 
-```{r}
+```{r collecting data from all Duke UNC games 2015-2023, include=FALSE}
 home_games <- list("20150218","20160305","20170209","20180303","20190220","20200307","20210206","20220305","20230204")
 away_games <- list("20150307","20160217","20170304","20180208","20190309","20200208","20210306","20220205","20230304")
 home_predictions <- cbd_torvik_game_prediction('Duke','North Carolina', "20150218")
@@ -46,14 +46,7 @@ for (x in away_games){
 full_predictions <- full_join(home_predictions, away_predictions)
 ```
 
-```{r}
-full_predictions %>% 
-  filter(team == 'Duke') %>% 
-  ggplot(aes(x = did_win)) +
-  geom_histogram(stat = "count", fill = "Blue")
-```
-
-```{r}
+```{r recording box score data from those games, include=FALSE}
 date <- c("02/17/2015","03/06/2015","02/16/2016","03/04/2016","02/08/2017","03/03/2017","02/07/2018","03/02/2018","02/19/2019","03/08/2019","02/07/2020","03/06/2020","02/05/2021","03/05/2021","02/04/2022","03/04/2022","02/03/2023","03/03/2023")
 date <- as.Date(date, format = "%m/%d/%Y")
 winner <- c("Duke","Duke","Duke","North Carolina","Duke","North Carolina","North Carolina","Duke","North Carolina","North Carolina","Duke","Duke","North Carolina","North Carolina","Duke","North Carolina","Duke","Duke")
@@ -62,7 +55,7 @@ duke_home <- c("Home","Away","Away","Home","Home","Away","Away","Home","Home","A
 real_results <- data.frame(date,winner,diff,duke_home)
 ```
 
-```{r}
+```{r showing projected vs actual point differential, echo=FALSE}
 full_predictions <- full_predictions %>% 
   mutate(duke_home = case_when(team == "Duke" & location == "H"  ~ "Home",
                                team == "North Carolina" & location == "A" ~ "Home",
@@ -98,7 +91,7 @@ real_results %>%
        color = "location")
 ```
 
-```{r error=FALSE,}
+```{r getting Duke ACC predictions, include=FALSE}
 acc_2023 <- full_join(cbd_torvik_season_prediction("Duke", 2023,"20230101"),duke_data, by = join_by(date)) %>% 
   select(-location, -avg_marg) %>% 
   filter(! is.na(pts_scored), opp_conf == "ACC", !is.na(team.x))
@@ -121,26 +114,16 @@ acc_2020 <- full_join(cbd_torvik_season_prediction("Duke", 2020,"20200101"),duke
 
 test <- full_join(test,acc_2020)
 
-test <- test %>% 
+duke_final <- test %>% 
   mutate(diff = pts_scored - pts_allowed,
          projection = case_when(win_per > 50  ~ "Projected Win", 
                   win_per <50 ~ "Projected Loss", 
                    TRUE ~ "Too close to call")) %>% 
   filter(!is.na(win_per))
 
-test %>% 
-  ggplot(aes(x = win_per, y = diff, color = projection)) +
-  geom_hline(yintercept =  0, linetype = 1) +
-  geom_vline(xintercept = 50, linetype = 2) +
-  geom_point() +
-  #geom_rect(xmin = 45, xmax = 55, ymin = -1000, ymax = 1000, alpha = 0, color = "White",linetype = 2, size = 1.5) +
-  labs(title = "Duke's ACC wins and losses in 2020-23",
-       subtitle = "Comparing projected win probability to actual point difference",
-       x = "Win probability (%)",
-       y = "Actual point differential")
 ```
 
-```{r error=FALSE}
+```{r getting UNC predictions, include=FALSE}
 unc_data <- cbd_torvik_game_factors() %>% 
   filter(team == 'North Carolina')
 
@@ -166,30 +149,19 @@ acc_2020_unc <- full_join(cbd_torvik_season_prediction("North Carolina", 2020, "
 
 test_unc <- full_join(test_unc,acc_2020_unc)
 
-test_unc <- test_unc %>% 
+unc_final <- test_unc %>% 
   mutate(diff = pts_scored - pts_allowed,
          projection = case_when(win_per > 50  ~ "Projected Win", 
                   win_per <50 ~ "Projected Loss", 
                    TRUE ~ "Too close to call")) %>% 
   filter(!is.na(win_per), team.x == "North Carolina")
 
-test_unc %>% 
-  ggplot(aes(x = win_per, y = diff, color = projection)) +
-  #facet_wrap(~year.y) +
-  geom_hline(yintercept =  0, linetype = 1) +
-  geom_vline(xintercept = 50, linetype = 2) +
-  geom_point() +
-  #geom_rect(xmin = 45, xmax = 55, ymin = -1000, ymax = 1000, alpha = 0, color = "White",linetype = 2, size = 1.5) +
-  labs(title = "North Carolina's ACC wins and losses in 2020-23",
-       subtitle = "Comparing projected win probability to actual point difference",
-       x = "Win probability (%)",
-       y = "Actual point differential")
 ```
 
-```{r}
+```{r conf_matrix for just duke, include=FALSE}
 #library(caret)
 
-conf_mat_data <- test %>% 
+conf_mat_data <- duke_final %>% 
   #filter(projection != "Too close to call") %>% 
   mutate(projection_bin = fct_relevel(as.factor(if_else(projection == "Projected Win", 1, 0)), "1"),
          result_bin = fct_relevel(as.factor(if_else(result == "W", 1, 0))),"1")
@@ -197,8 +169,8 @@ conf_matrix <- confusionMatrix(data=conf_mat_data$projection_bin, reference = co
 conf_matrix
 ```
 
-```{r}
-conf_mat_data_unc <- test_unc %>% 
+```{r conf_matrix for just unc, include=FALSE}
+conf_mat_data_unc <- unc_final %>% 
   filter(projection != "Too close to call") %>% 
   mutate(projection_bin = fct_relevel(as.factor(if_else(projection == "Projected Win", 1, 0)), "1"),
          result_bin = fct_relevel(as.factor(if_else(result == "W", 1, 0))),"1")
@@ -206,7 +178,7 @@ conf_matrix_unc <- confusionMatrix(data=conf_mat_data_unc$projection_bin, refere
 conf_matrix_unc
 ```
 
-```{r}
+```{r conf_matrix for Duke_UNC games}
 real_results <- real_results %>% 
   mutate(bin_win = as.factor(if_else(diff > 0, 1,0)))
 
@@ -219,7 +191,7 @@ filtered_predictions <- full_predictions %>%
 confusionMatrix(data=filtered_predictions$bin_win, reference = real_results$bin_win, positive = "1")
 ```
 
-```{r}
+```{r graph for Duke UNC games, echo=FALSE}
 joined_pred_real <- full_join(real_results,full_predictions, by = join_by(date))
 
 joined_pred_real %>% 
@@ -239,33 +211,9 @@ joined_pred_real %>%
        shape = "Where is the game?")
 ```
 
-```{r}
 
-acc_teams_1 <- c("Virginia","Virginia Tech","Wake Forest",
-               "Boston College","Syracuse","Florida St.", "Miami FL")
-               
-acc_teams_2 <- c("Notre Dame","Georgia Tech",
-               "North Carolina", "Pittsburgh",
-               "North Carolina St.","Clemson","Louisville")
-
-my_years <- c(2016,2017,2018,2019,2020,2021,2022,2023)
-
-#cbd_torvik_season_prediction(team = "Georgia Tech", year = 2023)
-
-acc_dat <- cbd_torvik_season_prediction(team = "North Carolina", year = 2023) %>% 
-  filter(opp == "Duke")
-
-#for (x in acc_teams_1){
-#  this_dat = cbd_torvik_season_prediction(team = x, year = 2018) %>% 
-#    filter(opp == "Duke")
-#  acc_dat <- full_join(acc_dat,this_dat)
-#}
-
-
-```
-
-```{r}
-both_teams <- full_join(test,test_unc)
+```{r graph and conf_matrix for both teams}
+both_teams <- full_join(duke_final,unc_final)
 
 both_teams %>% 
   ggplot(aes(x = win_per, y = diff, color = projection, shape = team.x)) +
