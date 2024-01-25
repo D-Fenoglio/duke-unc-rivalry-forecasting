@@ -19,16 +19,30 @@ duke_data <- cbd_torvik_game_factors() %>%
   filter(team == 'Duke')
 ```
 
-```{r simulating Duke UNC game for feb 2024, include=FALSE}
+# What is the game prediction?
+
+```{r simulating Duke UNC game for feb 2024, echo=FALSE}
 duke_unc_game <- cbd_torvik_season_prediction('Duke',2024) %>% 
   filter(opp == 'North Carolina', game_location == 'A')
 duke_unc_game
 unc_duke_game <- cbd_torvik_season_prediction('North Carolina',2024) %>% 
   filter(opp == 'Duke', game_location == 'H')
 unc_duke_game
-result <- rbinom(100, 1, 0.2346)
-hist(result) 
+
+result <- rbinom(100, 1, 0.22895)
+
+single_game_pred <- as.data.frame(result) 
+
+single_game_pred %>% 
+  ggplot(aes(x = result)) +
+  geom_histogram(binwidth = 0.5, fill = "#003087") +
+  labs(title = "100 simulations of Duke vs. UNC",
+       subtitle = "Using probability 0.22895 for a Duke win",
+       x = "Result (1 = Duke win, 0 = UNC win)",
+       y = "Count")
 ```
+
+This is a simple representation of 100 simulations of a binomial trial with the given probability of Duke winning. In other words, if the game was played 100 times, these would be the results. Clearly, the Tar Heels are going to run away with this one. But, this is just a surface level look at the data, so let's look closer.
 
 ```{r collecting data from all Duke UNC games 2015-2023, include=FALSE}
 home_games <- list("20150218","20160305","20170209","20180303","20190220","20200307","20210206","20220305","20230204")
@@ -55,6 +69,8 @@ diff <- c(2,7,1,-4,8,-7,-4,10,-16,-9,2,13,-4,-18,20,-13,6,5)
 duke_home <- c("Home","Away","Away","Home","Home","Away","Away","Home","Home","Away","Away","Home","Home","Away","Away","Home","Home","Away")
 real_results <- data.frame(date,winner,diff,duke_home)
 ```
+
+# Some exploratory analysis
 
 ```{r showing projected vs actual point differential, echo=FALSE}
 full_predictions <- full_predictions %>% 
@@ -91,6 +107,8 @@ real_results %>%
        x = "Time",
        color = "location")
 ```
+
+These graphs allow you to see the vast difference between projected point differentials and actual game scores. In particular, notice the blue dot dated right after 2022. This was Coach K's final home game. An unranked North Carolina team beat No. 9 Duke in a decisive 13-point victory. On the whole, the predictions can get really far off. Maybe it's just hard to predict basketball games (it is), and the model can't do much.
 
 ```{r getting Duke ACC predictions, include=FALSE}
 acc_2023 <- full_join(cbd_torvik_season_prediction("Duke", 2023,"20230101"),duke_data, by = join_by(date)) %>% 
@@ -179,6 +197,36 @@ conf_matrix_unc <- confusionMatrix(data=conf_mat_data_unc$projection_bin, refere
 conf_matrix_unc
 ```
 
+# Duke and UNC ACC games 2020-2023
+
+```{r graph and conf_matrix for both teams, echo=FALSE,message=FALSE, warning=FALSE}
+both_teams <- full_join(duke_final,unc_final)
+
+both_teams %>% 
+  ggplot(aes(x = win_per, y = diff, color = projection, shape = team.x)) +
+  #facet_wrap(~year.y) +
+  geom_hline(yintercept =  0, linetype = 1) +
+  geom_vline(xintercept = 50, linetype = 2) +
+  geom_point(size = 3, alpha = 0.75) +
+  #geom_rect(xmin = 45, xmax = 55, ymin = -1000, ymax = 1000, alpha = 0, color = "White",linetype = 2, size = 1.5) +
+  labs(title = "Duke and UNC's ACC wins and losses from 2020-23",
+       subtitle = "Comparing projected win probability to actual point difference",
+       shape = "",
+       x = "Win probability (%)",
+       y = "Actual point differential")
+
+conf_mat_data_combo <- both_teams %>% 
+  filter(projection != "Too close to call") %>% 
+  mutate(projection_bin = fct_relevel(as.factor(if_else(projection == "Projected Win", 1, 0)), "1"),
+         result_bin = fct_relevel(as.factor(if_else(result == "W", 1, 0))),"1")
+conf_matrix_combo <- confusionMatrix(data=conf_mat_data_combo$projection_bin, reference = conf_mat_data_combo$result_bin, positive = "1")
+conf_matrix_combo
+```
+
+This graph allows us to see the distribution of Duke and North Carolina's ACC games from the past few years, and how the model did at predicting the outcome. On the whole, it did a pretty good job, as shown by the confusion matrix analysis. Great! Then, it should be able to be just effective at predicting Duke vs. UNC, right?
+
+# Now, let's see the past 8 years of Duke vs. UNC
+
 ```{r graph for Duke UNC games, echo=FALSE}
 real_results <- real_results %>% 
   mutate(bin_win = as.factor(if_else(diff > 0, 1,0)))
@@ -204,33 +252,18 @@ joined_pred_real %>%
        color = "Did Duke win?",
        shape = "Where is the game?")
 ```
-```{r conf_matrix for Duke_UNC games, echo=FALSE, message=FALSE}
+
+This graph breaks down win probability versus actual results, with coloring showing which shade of blue won. A quick look at this graph shows that our model didn't do a very great job. Why are these games so far off if on the whole it does a good job? Again, let's look closer.
+
+```{r conf_matrix for Duke_UNC games, echo=FALSE, message=FALSE,warning=FALSE}
 filtered_predictions <- full_predictions %>% 
   filter(team == "Duke")
 
 confusionMatrix(data=filtered_predictions$bin_win, reference = real_results$bin_win, positive = "1")
 ```
 
-```{r graph and conf_matrix for both teams, echo=FALSE,message=FALSE}
-both_teams <- full_join(duke_final,unc_final)
+In fact, this data does not tell us much about the true outcome of the game at all. Positive and negative predictive values are low, and we might  be better off just flipping a coin. While we can't create any concrete reasons why solely from this data, we can conclude that this model does not consistently provide an accurate prediction.
 
-both_teams %>% 
-  ggplot(aes(x = win_per, y = diff, color = projection, shape = team.x)) +
-  #facet_wrap(~year.y) +
-  geom_hline(yintercept =  0, linetype = 1) +
-  geom_vline(xintercept = 50, linetype = 2) +
-  geom_point(size = 3, alpha = 0.75) +
-  #geom_rect(xmin = 45, xmax = 55, ymin = -1000, ymax = 1000, alpha = 0, color = "White",linetype = 2, size = 1.5) +
-  labs(title = "Duke and UNC's ACC wins and losses from 2020-23",
-       subtitle = "Comparing projected win probability to actual point difference",
-       shape = "",
-       x = "Win probability (%)",
-       y = "Actual point differential")
+# Conclusions
 
-conf_mat_data_combo <- both_teams %>% 
-  filter(projection != "Too close to call") %>% 
-  mutate(projection_bin = fct_relevel(as.factor(if_else(projection == "Projected Win", 1, 0)), "1"),
-         result_bin = fct_relevel(as.factor(if_else(result == "W", 1, 0))),"1")
-conf_matrix_combo <- confusionMatrix(data=conf_mat_data_combo$projection_bin, reference = conf_mat_data_combo$result_bin, positive = "1")
-conf_matrix_combo
-```
+In my own humble opinion, this game is the best rivalry in sports. Every piece of data can be thrown out the window when it comes to these two schools, and instead of trying to jump to any conclusions, we're better off just going along for the ride. My full article breaking down these findings in a more compact, thorough way can be found on dukechronicle.com.
