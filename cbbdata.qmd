@@ -1,10 +1,11 @@
 ---
-title: "cbbdata"
+title: "Predicting the Duke vs. UNC game on Feb. 3, 2023 using modeling"
 format: pdf
 editor: visual
+author: "Dom Fenoglio, The Duke Chronicle"
 ---
 
-```{r loading packages, message=FALSE}
+```{r loading packages, include=FALSE}
 # persistent log-in
 cbbdata::cbd_login()
 library(cbbdata)
@@ -13,12 +14,12 @@ library(tidymodels)
 library(caret)
 ```
 
-```{r getting Duke data}
+```{r getting Duke data, include=FALSE}
 duke_data <- cbd_torvik_game_factors() %>% 
   filter(team == 'Duke')
 ```
 
-```{r simulating Duke UNC game for feb 2024}
+```{r simulating Duke UNC game for feb 2024, include=FALSE}
 duke_unc_game <- cbd_torvik_season_prediction('Duke',2024) %>% 
   filter(opp == 'North Carolina', game_location == 'A')
 duke_unc_game
