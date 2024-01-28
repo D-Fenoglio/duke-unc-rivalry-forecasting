@@ -238,7 +238,7 @@ conf_matrix_combo
 
 This graph allows us to see the distribution of Duke and North Carolina's ACC games from the past few years, and how the model did at predicting the outcome. On the whole, it did a pretty good job, as shown by the confusion matrix analysis. Our confusion matrix gave a significant p-value of 0.001546, a positive predictive of 72.03% and a negative predictive value of 69.44%. Great! Then, it should be able to be just effective at predicting Duke vs. UNC, right?
 
-# Now, let's see the past 8 years of Duke vs. UNC
+# Now, let's see the past 8 years of the Rivalry
 
 ```{r graph for Duke UNC games, echo=FALSE}
 real_results <- real_results %>% 
