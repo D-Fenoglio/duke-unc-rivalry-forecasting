@@ -6,7 +6,8 @@ author: "Dom Fenoglio, The Duke Chronicle"
 ---
 
 ```{r loading packages, include=FALSE}
-# persistent log-in
+# first, install cbbdata package and create your own login, or else none of the
+# code below will work
 cbbdata::cbd_login()
 library(cbbdata)
 library(tidyverse)
@@ -218,11 +219,9 @@ both_teams <- full_join(duke_final,unc_final)
 
 both_teams %>% 
   ggplot(aes(x = win_per, y = diff, color = projection, shape = team.x)) +
-  #facet_wrap(~year.y) +
   geom_hline(yintercept =  0, linetype = 1) +
   geom_vline(xintercept = 50, linetype = 2) +
-  geom_point(size = 3, alpha = 0.75) +
-  #geom_rect(xmin = 45, xmax = 55, ymin = -1000, ymax = 1000, alpha = 0, color = "White",linetype = 2, size = 1.5) +
+  geom_point(size = 3) +
   labs(title = "Duke and UNC's ACC wins and losses from 2020-23",
        subtitle = "Comparing projected win probability to actual point difference",
        shape = "",
@@ -259,8 +258,8 @@ joined_pred_real %>%
   scale_color_manual(values = c("#003087","#62C6F2")) +
   geom_hline(yintercept = 0, linetype = 1) +
   geom_vline(xintercept = 50, linetype = 2) +
-  labs(title = "Duke vs. UNC games predicted by Torvik formula",
-       subtitle = "Games from 2015-2023",
+  labs(title = "Duke and UNC's wins and losses against\neach other from 2015-2023",
+       subtitle = "Comparing projected win probability to actual point difference",
        x = "Predicted Duke win probability (%)",
        y = "Actual point differential",
        color = "Did Duke win?",
