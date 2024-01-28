@@ -29,7 +29,7 @@ unc_duke_game <- cbd_torvik_season_prediction('North Carolina',2024) %>%
   filter(opp == 'Duke', game_location == 'H')
 unc_duke_game
 
-result <- rbinom(100, 1, 0.22895)
+result <- rbinom(100, 1, 0.22332)
 
 single_game_pred <- as.data.frame(result) 
 
@@ -37,7 +37,7 @@ single_game_pred %>%
   ggplot(aes(x = result)) +
   geom_histogram(binwidth = 0.5, fill = "#003087") +
   labs(title = "100 simulations of Duke vs. UNC",
-       subtitle = "Using probability 0.22895 for a Duke win",
+       subtitle = "Using probability 0.22332 for a Duke win",
        x = "Result (1 = Duke win, 0 = UNC win)",
        y = "Count")
 ```
@@ -45,14 +45,18 @@ single_game_pred %>%
 This is a simple representation of 100 simulations of a binomial trial with the given probability of Duke winning. In other words, if the game was played 100 times, these would be the results. Clearly, the Tar Heels are going to run away with this one. But, this is just a surface level look at the data, so let's look closer.
 
 ```{r collecting data from all Duke UNC games 2015-2023, include=FALSE}
-home_games <- list("20150218","20160305","20170209","20180303","20190220","20200307","20210206","20220305","20230204")
-away_games <- list("20150307","20160217","20170304","20180208","20190309","20200208","20210306","20220205","20230304")
-home_predictions <- cbd_torvik_game_prediction('Duke','North Carolina', "20150218")
+home_games <- list("20150218","20160305","20170209","20180303",
+                   "20190220","20200307","20210206","20220305","20230204")
+away_games <- list("20150307","20160217","20170304","20180208",
+                   "20190309","20200208","20210306","20220205","20230304")
+home_predictions <- cbd_torvik_game_prediction('Duke','North Carolina',
+                                               "20150218")
 for (x in home_games){
   this_pred = cbd_torvik_game_prediction('Duke','North Carolina', x)
   home_predictions = full_join(home_predictions, this_pred)
 }
-away_predictions <- cbd_torvik_game_prediction('North Carolina', 'Duke', "20150307")
+away_predictions <- cbd_torvik_game_prediction('North Carolina', 
+                                               'Duke', "20150307")
 for (x in away_games){
   this_pred = cbd_torvik_game_prediction('North Carolina','Duke', x)
   away_predictions = full_join(away_predictions, this_pred)
@@ -62,11 +66,21 @@ full_predictions <- full_join(home_predictions, away_predictions)
 ```
 
 ```{r recording box score data from those games, include=FALSE}
-date <- c("02/17/2015","03/06/2015","02/16/2016","03/04/2016","02/08/2017","03/03/2017","02/07/2018","03/02/2018","02/19/2019","03/08/2019","02/07/2020","03/06/2020","02/05/2021","03/05/2021","02/04/2022","03/04/2022","02/03/2023","03/03/2023")
+date <- c("02/17/2015","03/06/2015","02/16/2016","03/04/2016",
+          "02/08/2017","03/03/2017","02/07/2018","03/02/2018",
+          "02/19/2019","03/08/2019","02/07/2020","03/06/2020",
+          "02/05/2021","03/05/2021","02/04/2022","03/04/2022",
+          "02/03/2023","03/03/2023")
 date <- as.Date(date, format = "%m/%d/%Y")
-winner <- c("Duke","Duke","Duke","North Carolina","Duke","North Carolina","North Carolina","Duke","North Carolina","North Carolina","Duke","Duke","North Carolina","North Carolina","Duke","North Carolina","Duke","Duke")
+winner <- c("Duke","Duke","Duke","North Carolina","Duke",
+            "North Carolina","North Carolina","Duke",
+            "North Carolina","North Carolina","Duke","Duke",
+            "North Carolina","North Carolina","Duke",
+            "North Carolina","Duke","Duke")
 diff <- c(2,7,1,-4,8,-7,-4,10,-16,-9,2,13,-4,-18,20,-13,6,5)
-duke_home <- c("Home","Away","Away","Home","Home","Away","Away","Home","Home","Away","Away","Home","Home","Away","Away","Home","Home","Away")
+duke_home <- c("Home","Away","Away","Home","Home","Away",
+               "Away","Home","Home","Away","Away","Home",
+               "Home","Away","Away","Home","Home","Away")
 real_results <- data.frame(date,winner,diff,duke_home)
 ```
 
@@ -223,7 +237,7 @@ conf_matrix_combo <- confusionMatrix(data=conf_mat_data_combo$projection_bin, re
 conf_matrix_combo
 ```
 
-This graph allows us to see the distribution of Duke and North Carolina's ACC games from the past few years, and how the model did at predicting the outcome. On the whole, it did a pretty good job, as shown by the confusion matrix analysis. Great! Then, it should be able to be just effective at predicting Duke vs. UNC, right?
+This graph allows us to see the distribution of Duke and North Carolina's ACC games from the past few years, and how the model did at predicting the outcome. On the whole, it did a pretty good job, as shown by the confusion matrix analysis. Our confusion matrix gave a significant p-value of 0.001546, a positive predictive of 72.03% and a negative predictive value of 69.44%. Great! Then, it should be able to be just effective at predicting Duke vs. UNC, right?
 
 # Now, let's see the past 8 years of Duke vs. UNC
 
@@ -241,7 +255,7 @@ joined_pred_real %>%
   filter(team == "Duke") %>% 
   ggplot(aes(x=win_per,y=diff.x,color = win_cat, shape = duke_home.x)) +
   #facet_wrap(~ duke_home.x) +
-  geom_point(size = 3) +
+  geom_point(size = 4) +
   scale_color_manual(values = c("#003087","#62C6F2")) +
   geom_hline(yintercept = 0, linetype = 1) +
   geom_vline(xintercept = 50, linetype = 2) +
@@ -262,7 +276,7 @@ filtered_predictions <- full_predictions %>%
 confusionMatrix(data=filtered_predictions$bin_win, reference = real_results$bin_win, positive = "1")
 ```
 
-In fact, this data does not tell us much about the true outcome of the game at all. Positive and negative predictive values are low, and we might  be better off just flipping a coin. While we can't create any concrete reasons why solely from this data, we can conclude that this model does not consistently provide an accurate prediction.
+In fact, this data does not tell us much about the true outcome of the game at all. Positive and negative predictive values are low, and we might be better off just flipping a coin. While we can't create any concrete reasons why solely from this data, we can conclude that this model does not consistently provide an accurate prediction.
 
 # Conclusions
 
