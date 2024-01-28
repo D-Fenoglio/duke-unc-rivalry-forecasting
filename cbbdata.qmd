@@ -221,7 +221,8 @@ both_teams %>%
   ggplot(aes(x = win_per, y = diff, color = projection, shape = team.x)) +
   geom_hline(yintercept =  0, linetype = 1) +
   geom_vline(xintercept = 50, linetype = 2) +
-  geom_point(size = 3) +
+  geom_point(size = 3, alpha = 0.75) +
+  theme_minimal() +
   labs(title = "Duke and UNC's ACC wins and losses from 2020-23",
        subtitle = "Comparing projected win probability to actual point difference",
        shape = "",
@@ -229,7 +230,6 @@ both_teams %>%
        y = "Actual point differential")
 
 conf_mat_data_combo <- both_teams %>% 
-  filter(projection != "Too close to call") %>% 
   mutate(projection_bin = fct_relevel(as.factor(if_else(projection == "Projected Win", 1, 0)), "1"),
          result_bin = fct_relevel(as.factor(if_else(result == "W", 1, 0))),"1")
 conf_matrix_combo <- confusionMatrix(data=conf_mat_data_combo$projection_bin, reference = conf_mat_data_combo$result_bin, positive = "1")
@@ -258,6 +258,7 @@ joined_pred_real %>%
   scale_color_manual(values = c("#003087","#62C6F2")) +
   geom_hline(yintercept = 0, linetype = 1) +
   geom_vline(xintercept = 50, linetype = 2) +
+  theme_minimal() +
   labs(title = "Duke and UNC's wins and losses against\neach other from 2015-2023",
        subtitle = "Comparing projected win probability to actual point difference",
        x = "Predicted Duke win probability (%)",
