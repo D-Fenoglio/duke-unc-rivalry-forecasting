@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.3.353">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Dom Fenoglio, The Duke Chronicle">
+
+<title>Predicting Duke vs.&nbsp;UNC Feb.&nbsp;3, 2023 using modeling</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+</style>
+
+
+<script src="cbbdata_files/libs/clipboard/clipboard.min.js"></script>
+<script src="cbbdata_files/libs/quarto-html/quarto.js"></script>
+<script src="cbbdata_files/libs/quarto-html/popper.min.js"></script>
+<script src="cbbdata_files/libs/quarto-html/tippy.umd.min.js"></script>
+<script src="cbbdata_files/libs/quarto-html/anchor.min.js"></script>
+<link href="cbbdata_files/libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="cbbdata_files/libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="cbbdata_files/libs/bootstrap/bootstrap.min.js"></script>
+<link href="cbbdata_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="cbbdata_files/libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+
+
+</head>
+
+<body class="fullcontent">
+
+<div id="quarto-content" class="page-columns page-rows-contents page-layout-article">
+
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Predicting Duke vs.&nbsp;UNC Feb.&nbsp;3, 2023 using modeling</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>Dom Fenoglio, The Duke Chronicle </p>
+          </div>
+  </div>
+    
+  
+    
+  </div>
+  
+
+</header>
+
+<section id="what-is-the-game-prediction" class="level1">
+<h1>What is the game prediction?</h1>
+<div class="cell">
+<div class="cell-output cell-output-stdout">
+<pre><code>        date team            opp game_location    tempo      ppp  pts  win_per
+1 2024-02-03 Duke North Carolina             A 71.22449 1.017415 72.5 22.33198
+  did_win simulate_date year
+1   FALSE    2024-02-03 2024</code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>        date           team  opp game_location    tempo      ppp  pts  win_per
+1 2024-02-03 North Carolina Duke             H 71.22449 1.133885 80.8 77.66802
+  did_win simulate_date year
+1    TRUE    2024-02-03 2024</code></pre>
+</div>
+<div class="cell-output-display">
+<p><img src="cbbdata_files/figure-html/simulating%20Duke%20UNC%20game%20for%20feb%202024-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+<p>This is a simple representation of 100 simulations of a binomial trial with the given probability of Duke winning. In other words, if the game was played 100 times, these would be the results. Clearly, the Tar Heels are going to run away with this one. But, this is just a surface level look at the data, so let’s look closer.</p>
+</section>
+<section id="some-exploratory-analysis" class="level1">
+<h1>Some exploratory analysis</h1>
+<div class="cell">
+<div class="cell-output-display">
+<p><img src="cbbdata_files/figure-html/showing%20projected%20vs%20actual%20point%20differential-1.png" class="img-fluid" width="672"></p>
+</div>
+<div class="cell-output-display">
+<p><img src="cbbdata_files/figure-html/showing%20projected%20vs%20actual%20point%20differential-2.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+<p>These graphs allow you to see the vast difference between projected point differentials and actual game scores. In particular, notice the blue dot dated right after 2022. This was Coach K’s final home game. An unranked North Carolina team beat No.&nbsp;9 Duke in a decisive 13-point victory. On the whole, the predictions can get really far off. Maybe it’s just hard to predict basketball games (it is), and the model can’t do much.</p>
+</section>
+<section id="duke-and-unc-acc-games-2020-2023" class="level1">
+<h1>Duke and UNC ACC games 2020-2023</h1>
+<div class="cell">
+<div class="cell-output-display">
+<p><img src="cbbdata_files/figure-html/graph%20and%20conf_matrix%20for%20both%20teams-1.png" class="img-fluid" width="672"></p>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Confusion Matrix and Statistics
+
+          Reference
+Prediction  0  1
+         0 25 11
+         1 33 85
+                                         
+               Accuracy : 0.7143         
+                 95% CI : (0.636, 0.7841)
+    No Information Rate : 0.6234         
+    P-Value [Acc &gt; NIR] : 0.011316       
+                                         
+                  Kappa : 0.3421         
+                                         
+ Mcnemar's Test P-Value : 0.001546       
+                                         
+            Sensitivity : 0.8854         
+            Specificity : 0.4310         
+         Pos Pred Value : 0.7203         
+         Neg Pred Value : 0.6944         
+             Prevalence : 0.6234         
+         Detection Rate : 0.5519         
+   Detection Prevalence : 0.7662         
+      Balanced Accuracy : 0.6582         
+                                         
+       'Positive' Class : 1              
+                                         </code></pre>
+</div>
+</div>
+<p>This graph allows us to see the distribution of Duke and North Carolina’s ACC games from the past few years, and how the model did at predicting the outcome. On the whole, it did a pretty good job, as shown by the confusion matrix analysis. Our confusion matrix gave a significant p-value of 0.001546, a positive predictive of 72.03% and a negative predictive value of 69.44%. Great! Then, it should be able to be just effective at predicting Duke vs.&nbsp;UNC, right?</p>
+</section>
+<section id="now-lets-see-the-past-8-years-of-the-rivalry" class="level1">
+<h1>Now, let’s see the past 8 years of the Rivalry</h1>
+<div class="cell">
+<div class="cell-output-display">
+<p><img src="cbbdata_files/figure-html/graph%20for%20Duke%20UNC%20games-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+<p>This graph breaks down win probability versus actual results, with coloring showing which shade of blue won. A quick look at this graph shows that our model didn’t do a very great job. Why are these games so far off if on the whole it does a good job? Again, let’s look closer.</p>
+<div class="cell">
+<div class="cell-output cell-output-stdout">
+<pre><code>Confusion Matrix and Statistics
+
+          Reference
+Prediction 0 1
+         0 3 3
+         1 5 7
+                                          
+               Accuracy : 0.5556          
+                 95% CI : (0.3076, 0.7847)
+    No Information Rate : 0.5556          
+    P-Value [Acc &gt; NIR] : 0.5966          
+                                          
+                  Kappa : 0.0769          
+                                          
+ Mcnemar's Test P-Value : 0.7237          
+                                          
+            Sensitivity : 0.7000          
+            Specificity : 0.3750          
+         Pos Pred Value : 0.5833          
+         Neg Pred Value : 0.5000          
+             Prevalence : 0.5556          
+         Detection Rate : 0.3889          
+   Detection Prevalence : 0.6667          
+      Balanced Accuracy : 0.5375          
+                                          
+       'Positive' Class : 1               
+                                          </code></pre>
+</div>
+</div>
+<p>In fact, this data does not tell us much about the true outcome of the game at all. Positive and negative predictive values are low, and we might be better off just flipping a coin. While we can’t create any concrete reasons why solely from this data, we can conclude that this model does not consistently provide an accurate prediction.</p>
+</section>
+<section id="conclusions" class="level1">
+<h1>Conclusions</h1>
+<p>In my own humble opinion, this game is the best rivalry in sports. Every piece of data can be thrown out the window when it comes to these two schools, and instead of trying to jump to any conclusions, we’re better off just going along for the ride. My full article breaking down these findings in a more compact, thorough way can be found on dukechronicle.com.</p>
+</section>
+
+</main>
+<!-- /main column -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    text: function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+  function tippyHover(el, contentFn) {
+    const config = {
+      allowHTML: true,
+      content: contentFn,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start'
+    };
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      return note.innerHTML;
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+
+
+
+</body></html>

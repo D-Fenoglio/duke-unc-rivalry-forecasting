@@ -1,6 +1,6 @@
 ---
 title: "Predicting Duke vs. UNC Feb. 3, 2023 using modeling"
-format: pdf
+format: html
 editor: visual
 author: "Dom Fenoglio, The Duke Chronicle"
 ---
