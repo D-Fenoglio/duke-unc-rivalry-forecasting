@@ -225,7 +225,8 @@ both_teams %>%
   theme_minimal() +
   labs(title = "Duke and UNC's ACC wins and losses from 2020-23",
        subtitle = "Comparing projected win probability to actual point difference",
-       shape = "",
+       shape = "Team",
+       color = "Projection",
        x = "Win probability (%)",
        y = "Actual point differential")
 
